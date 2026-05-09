@@ -1,0 +1,26 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dorxng-mcp"
+version = "0.1.0"
+description = "Model Context Protocol server for DorXNG/SearXNG OSINT searches"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "htayj" }]
+dependencies = [
+  "mcp>=1.0.0",
+  "requests>=2.31.0",
+  "urllib3>=1.26.15",
+]
+
+[project.scripts]
+dorxng-mcp = "dorxng_mcp.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dorxng_mcp"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]

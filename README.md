@@ -63,6 +63,10 @@ For local development without installing the script:
 }
 ```
 
+## Hard content block
+
+All tools refuse inputs that indicate illegal sexual material involving minors. This is a hard block to prevent searches, result storage, guidance generation, or follow-on access paths for that material.
+
 ## Tool response shape
 
 Tools return structured payloads:
@@ -107,6 +111,18 @@ Arguments:
 - `database`: SQLite database path. Default `dorxng.db`.
 - `pattern`: case-insensitive regex. Default `.*`.
 - `limit`: max matches returned. Default `100`.
+
+### `dorxng_get_dorking_guidance`
+
+Returns search-operator guidance and DorXNG query templates for file discovery.
+
+Arguments:
+
+- `target`: optional domain or URL prefix used to scope templates with `site:`.
+- `objective`: `broad`, `files`, `archives`, `directories`, or `code`. Default `broad`.
+- `file_types`: optional list of file extensions to use in file templates.
+
+The guidance covers operators such as `site:`, `filetype:`, `ext:`, `intitle:`, `inurl:`, `intext:`, exact quotes, exclusions, `OR`, and SearXNG/DorXNG `!engine` bangs. Templates focus on indexed documents, directory listings, archives, and source/configuration discovery.
 
 ### `dorxng_get_setup_info`
 

@@ -1,6 +1,6 @@
 # dorxng-mcp
 
-A Python [Model Context Protocol](https://modelcontextprotocol.io/) server for running DorXNG-style OSINT searches against private DorXNG/SearXNG instances and storing results in DorXNG-compatible SQLite databases.
+A Python [Model Context Protocol](https://modelcontextprotocol.io/) server for running DorXNG-style OSINT searches against private DorXNG/SearXNG instances and, when explicitly requested, storing results in DorXNG-compatible SQLite databases.
 
 Upstream DorXNG: <https://github.com/ResearchandDestroy/DorXNG>
 
@@ -20,11 +20,13 @@ Run a private DorXNG SearXNG container:
 docker run researchanddestroy/searxng:latest
 ```
 
-By convention DorXNG's first local Docker container is available at:
+This setup defaults to the current local Podman port mapping:
 
 ```text
-https://172.17.0.2/search
+https://127.0.0.1:8443/search
 ```
+
+DorXNG's upstream Docker bridge convention is often `https://172.17.0.2/search`; pass `server` if your instance is exposed elsewhere.
 
 For multiple instances, create a newline-delimited `server.lst`:
 
@@ -61,30 +63,54 @@ For local development without installing the script:
 }
 ```
 
+## Tool response shape
+
+Tools return structured payloads:
+
+- Success: `{ "ok": true, ... }`
+- Failure: `{ "ok": false, "error": { "type": "...", "message": "..." }, "metadata": { ... } }`
+
+Search tools cap inline results with `limit`/`offset` and include metadata such as `result_count`, `returned_count`, `truncated`, `pages_requested`, `servers_used`, and `stored`.
+
 ## Tools
 
 ### `dorxng_search`
 
-Runs a SearXNG JSON search using DorXNG-compatible parameters (`q`, `format=json`, `pageno`) and optionally stores results in SQLite.
+Runs a read-only SearXNG JSON search using DorXNG-compatible parameters (`q`, `format=json`, `pageno`). It does **not** write to SQLite.
 
 Arguments:
 
-- `query` (required): search query or dork.
-- `server`: single SearXNG `/search` endpoint. Default: `https://172.17.0.2/search`.
-- `server_list_file`: newline-delimited list of endpoints. Takes precedence over `server`.
+- `query` (required): authorized search query or dork.
+- `server`: single private SearXNG `/search` endpoint. Default: `https://127.0.0.1:8443/search`.
+- `server_list_file`: newline-delimited list of private endpoints. Takes precedence over `server`.
 - `pages`: number of result pages to request.
 - `concurrency`: max concurrent page requests.
 - `timeout_seconds`: per-request timeout.
-- `database`: SQLite database path, default `dorxng.db`; pass null/empty to skip storing.
 - `verify_tls`: verify TLS certificates. Default `false` to match DorXNG's self-signed container workflow.
+- `limit`: max results returned inline. Default `25`.
+- `offset`: result offset for paging through the inline response window. Default `0`.
+
+### `dorxng_search_and_store`
+
+Runs the same search, explicitly stores de-duplicated results in a DorXNG-compatible SQLite database, and returns a capped inline result window.
+
+Arguments are the same as `dorxng_search`, plus:
+
+- `database` (required): SQLite database path to create/update.
 
 ### `dorxng_query_database`
 
 Regex-searches a DorXNG-compatible SQLite database by query, title, or URL.
 
-### `dorxng_server_help`
+Arguments:
 
-Returns upstream setup hints and safety warning.
+- `database`: SQLite database path. Default `dorxng.db`.
+- `pattern`: case-insensitive regex. Default `.*`.
+- `limit`: max matches returned. Default `100`.
+
+### `dorxng_get_setup_info`
+
+Returns upstream setup information and the private-instance safety warning.
 
 ## Development
 

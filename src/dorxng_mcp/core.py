@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
 
-DEFAULT_SERVER = "https://172.17.0.2/search"
+DEFAULT_SERVER = "https://127.0.0.1:8443/search"
 DEFAULT_DATABASE = "dorxng.db"
 USER_AGENT = "DorXNG-MCP"
 
